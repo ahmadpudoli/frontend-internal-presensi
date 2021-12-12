@@ -1,0 +1,32 @@
+/*================================================================================
+	Item Name: Vuexy - Vuejs, HTML & Laravel Admin Dashboard Template
+	Version: 2.0
+	Author: PIXINVENT
+	Author URL: http://www.themeforest.net/user/pixinvent
+================================================================================
+
+NOTE:
+------
+PLACE HERE YOUR OWN SCSS CODES AND IF NEEDED, OVERRIDE THE STYLES FROM THE OTHER STYLESHEETS.
+WE WILL RELEASE FUTURE UPDATES SO IN ORDER TO NOT OVERWRITE YOUR STYLES IT'S BETTER LIKE THIS.  */
+.mt-05 {
+	margin-top: 0.5rem;
+}
+.pt-05{
+	padding-top: 0.5rem;
+}
+
+.Select.is-open { position: relative; z-index: 1000 !important; }
+.Select-menu-outer {z-index: 1000 !important;position:relative;}
+
+label{
+	font-size:1rem !important;
+}
+
+.pr-3-5 {
+	padding-right: 2.3rem;
+}
+
+.pl-3-5 {
+	padding-left: 2.3rem;
+}
