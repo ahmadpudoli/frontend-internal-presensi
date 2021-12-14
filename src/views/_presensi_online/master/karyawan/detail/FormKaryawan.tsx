@@ -63,7 +63,7 @@ const FormKaryawan = (props: any) => {
     const location = useLocation();
     const queryClient = useQueryClient();
     const [block, setBlock] = useState(false);
-    const [jenisKelamin, setJenisKelamin] = useState('');    
+    const [jenisKelamin, setJenisKelamin] = useState('L');    
     const [withUser, setWithUser] = useState(false);
     const [roleSelect, setRole] = useState('');
     const [jabatanSelect, setJabatan] = useState('');
@@ -71,7 +71,6 @@ const FormKaryawan = (props: any) => {
 
     //===================
     const submitData = async (data: FormDataProps) => {
-
         const dataSubmit: FormDataProps = {
             nip:data.nip,
             nama_karyawan:data.nama_karyawan,
@@ -96,14 +95,44 @@ const FormKaryawan = (props: any) => {
             });
         }
     };
-    //validasi form
-    const SubmitFormValidation = yup.object().shape({
-        // nama_negara: yup.string().required('Nama Negara harus diisi.').min(3, 'Minimal 3 Karakter')
-        // inisial_negara: yup.string().required('Inisial Negara harus diisi.').min(3, 'Minimal 3 Karakter')
-    });
 
+    // const validate
+    const objValidateFormWithUser = {
+        // nip: yup.string().required('Username harus diisi.')
+        nip: yup.string().required().length(6),
+        nama_karyawan: yup.string().required().max(100),
+        alamat_karyawan: yup.string().min(6).max(15),
+        jenisKelamin: yup.string().required,
+        jenis_kelamin: yup.string().when('jenisKelamin', {
+                            is: true,
+                            then: yup.string().required("Jenis kelamin is required")
+                        }),
+        no_hp: yup.string().min(6).max(15),
+        email: yup.string().email().required().max(50),        
+        username: yup.string().required().max(20),     
+        password: yup.string().required().max(20),     
+        password_confirm:  yup.string()
+            .oneOf([yup.ref('password'), null], "sdfdsfsdafs")
+            .required('Password confirm is required')
+    };
+    const objValidateForm = {
+        // nip: yup.string().required('Username harus diisi.')
+        nip: yup.string().required().length(6),
+        nama_karyawan: yup.string().required().max(100),
+        alamat_karyawan: yup.string().min(6).max(15),
+        jenis_kelamin: yup.string().length(1),
+        no_hp: yup.string().min(6).max(15),
+        email: yup.string().email().required().max(50)
+    };
+
+    // tidak menggunakan ini, karena pada handle submit kita cast menggunakan antara objValidateFormWithUser atau objValidateForm
+    // const SubmitProfileSchema = yup.object().shape({
+    //     nip: yup.string().required().length(6),
+    //     nama_karyawan: yup.string().required().max(100),
+    // });
+    
     const { handleSubmit, errors, register, reset, clearErrors, setError, setValue } = useForm<FormDataProps>({
-        resolver: yupResolver(SubmitFormValidation)
+        resolver: yupResolver((withUser ? yup.object().shape(objValidateForm) : yup.object().shape(objValidateForm)))
     });
 
     //react query mutation
@@ -155,10 +184,10 @@ const FormKaryawan = (props: any) => {
             setValue('email', dataKaryawan.email || '');
             setValue('username',  (dataKaryawan.user ? dataKaryawan.user.username : '') || '');
             setValue('role', (dataKaryawan.user ? dataKaryawan.user.role : '') || '');
-            setValue('jabatan', (dataKaryawan.jabatan ? dataKaryawan.user.jabatan : '') || '');
+            setValue('jabatan', (dataKaryawan.jabatan ? dataKaryawan.jabatan : '') || '');
             setJenisKelamin(dataKaryawan.jenis_kelamin || '');
             setJabatan(dataKaryawan.jabatan || '')
-        }
+        } 
     }, [id_karyawan]);
 
     const default_list_role = [
@@ -360,7 +389,7 @@ const FormKaryawan = (props: any) => {
                                 </FormGroup>
 
                                 <FormGroup row>
-                                    <Label sm="3">Jenis Kelamin</Label>
+                                    <Label sm="3" for='jenis_kelamin'>Jenis Kelamin</Label>
                                     <Col sm="9" className="pt-50">
                                         <FormGroup check inline className="mr-2">
                                             <Label check>
@@ -370,8 +399,8 @@ const FormKaryawan = (props: any) => {
                                                         setJenisKelamin("L");
                                                     }}
                                                     type="radio"
-                                                    name="jenis_kelamin"
-                                                    defaultChecked={dataKaryawan && dataKaryawan.jenis_kelamin === 'L'}
+                                                    name="jenis_kelamin"                                                    
+                                                    defaultChecked={ (dataKaryawan === undefined) ||  (dataKaryawan && dataKaryawan.jenis_kelamin === 'L')}
                                                 />
                                                 <strong>Laki-laki</strong>
                                             </Label>
@@ -389,6 +418,7 @@ const FormKaryawan = (props: any) => {
                                                 Wanita
                                             </Label>
                                         </FormGroup>
+                                        {errors && errors.jenis_kelamin && <FormFeedback>{errors.jenis_kelamin.message}</FormFeedback>}
                                     </Col>
                                 </FormGroup>
 
