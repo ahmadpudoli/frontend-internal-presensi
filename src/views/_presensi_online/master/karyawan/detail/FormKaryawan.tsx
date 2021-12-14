@@ -21,7 +21,7 @@ import {
 
 import api from '@src/auth/api/useAPI';
 import { useMutation, useQueryClient } from 'react-query';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 
@@ -35,8 +35,29 @@ import { FormattedMessage } from 'react-intl';
 
 import Select from 'react-select';
 
+interface OptionData {
+    label: string;
+    value: string;
+}
+
 // import async from 'react-select/async';
 type FormDataProps = {
+    id_karyawan?: string;
+    nip: string;
+    nama_karyawan: string;
+    alamat_karyawan: string;
+    no_hp: string;
+    jenis_kelamin:string;
+    email:string;
+    username:string;
+    password:string;
+    password_confirm?:string;
+    role:OptionData;
+    with_user?:boolean;
+    jabatan?: string;
+};
+
+type SubmitDataProp = {
     id_karyawan?: string;
     nip?: string;
     nama_karyawan?: string;
@@ -71,7 +92,7 @@ const FormKaryawan = (props: any) => {
 
     //===================
     const submitData = async (data: FormDataProps) => {
-        const dataSubmit: FormDataProps = {
+        const dataSubmit: SubmitDataProp = {
             nip:data.nip,
             nama_karyawan:data.nama_karyawan,
             alamat_karyawan:data.alamat_karyawan,
@@ -102,24 +123,24 @@ const FormKaryawan = (props: any) => {
         nip: yup.string().required().length(6),
         nama_karyawan: yup.string().required().max(100),
         alamat_karyawan: yup.string().min(6).max(15),
-        jenisKelamin: yup.string().required,
-        jenis_kelamin: yup.string().when('jenisKelamin', {
-                            is: true,
-                            then: yup.string().required("Jenis kelamin is required")
-                        }),
+        // jenis_kelamin: yup.string().when(jenisKelamin, {
+        //                     is: true,
+        //                     then: yup.string().required("Jenis kelamin is required")
+        //                 }),
         no_hp: yup.string().min(6).max(15),
-        email: yup.string().email().required().max(50),        
-        username: yup.string().required().max(20),     
+        email: yup.string().email().required().max(50),       
+        username: yup.string().required().max(20),   
+        //role: yup.object().required(),
         password: yup.string().required().max(20),     
         password_confirm:  yup.string()
-            .oneOf([yup.ref('password'), null], "sdfdsfsdafs")
+            .oneOf([yup.ref('password'), null], "Password tidak sama")
             .required('Password confirm is required')
     };
     const objValidateForm = {
         // nip: yup.string().required('Username harus diisi.')
         nip: yup.string().required().length(6),
         nama_karyawan: yup.string().required().max(100),
-        alamat_karyawan: yup.string().min(6).max(15),
+        alamat_karyawan: yup.string().max(200),
         jenis_kelamin: yup.string().length(1),
         no_hp: yup.string().min(6).max(15),
         email: yup.string().email().required().max(50)
@@ -132,7 +153,7 @@ const FormKaryawan = (props: any) => {
     // });
     
     const { handleSubmit, errors, register, reset, clearErrors, setError, setValue } = useForm<FormDataProps>({
-        resolver: yupResolver((withUser ? yup.object().shape(objValidateForm) : yup.object().shape(objValidateForm)))
+        resolver: yupResolver((withUser ? yup.object().shape(objValidateFormWithUser) : yup.object().shape(objValidateForm)))
     });
 
     //react query mutation
@@ -191,13 +212,12 @@ const FormKaryawan = (props: any) => {
     }, [id_karyawan]);
 
     const default_list_role = [
-        { value: '', label: 'Pilih Role' },
         { value: 'admin', label: 'Administrator' },
         { value: 'user-biasa', label: 'User Biasa' }
     ];
 
     const default_list_jabatan = [
-        { value: '', label: 'Pilih Jabatan' },
+        { value: '-', label: '-' },
         { value: 'Kepala HRD', label: 'Kepala HRD' },
         { value: 'IT Manager', label: 'IT Manager' },
         { value: 'Kepala Divisi IT', label: 'Kepala Divisi IT' }
@@ -211,6 +231,33 @@ const FormKaryawan = (props: any) => {
             break;
         }
     }
+
+    const setDefaultJabatan = (selected: string | null) => {
+        // console.log('test');
+        // console.log(selected);
+        if (default_list_jabatan !== undefined && (selected || selected === '')) {
+            console.log('tuhkan');
+            if (selected !== null) {
+                if (selected === '') {
+                    return {value: '-', label: '-'};
+                } else {
+                    return default_list_jabatan.filter((i: any) => i.value === selected);
+                }
+            }
+        } 
+        return null;
+    };
+
+    const setDefaultRole = (selected: string | null) => {
+        console.log('test');
+        console.log(selected);
+        if (default_list_role !== undefined && selected) {
+            if (selected !== null) {
+                return default_list_role.filter((i: any) => i.value === selected);
+            }
+        }
+        return null;
+    };
    
     console.log('fdfd');
     console.log(defaultValueJabatan);
@@ -236,9 +283,10 @@ const FormKaryawan = (props: any) => {
                                 className="react-select"
                                 classNamePrefix="select"
                                 // defaultValue={renderData(query.data)[0] || ''}
+                                name="role"
                                 options={default_list_role}
-                                isClearable={false}                                
-                                defaultValue={{label: "Pilih Role", value: ''} }
+                                isClearable={false}       
+                                defaultValue={setDefaultRole((dataKaryawan !== undefined && dataKaryawan.user !== null) ? dataKaryawan.user.role : null)}
                                 onChange={(e) => {
                                     if (e) {
                                         setRole(e.value);
@@ -361,7 +409,7 @@ const FormKaryawan = (props: any) => {
                                             // defaultValue={renderData(query.data)[0] || ''}
                                             options={default_list_jabatan}
                                             isClearable={true}        
-                                            defaultValue={defaultValueJabatan}
+                                            defaultValue={setDefaultJabatan((dataKaryawan !== undefined) ? dataKaryawan.jabatan : '')}                                
                                             onChange={(e) => {
                                                 if (e) {
                                                     setJabatan(e.value);
