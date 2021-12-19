@@ -374,6 +374,7 @@ const FormKaryawan = (props: any) => {
                                             name="nip"
                                             innerRef={register({ required: true })}
                                             invalid={errors.nip && true}
+                                            maxLength={6}
                                             // disabled={readOnlyInput}
                                         />
                                         {errors && errors.nip && <FormFeedback>{errors.nip.message}</FormFeedback>}
