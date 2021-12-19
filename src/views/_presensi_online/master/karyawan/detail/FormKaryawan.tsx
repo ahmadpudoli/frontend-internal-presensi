@@ -122,7 +122,7 @@ const FormKaryawan = (props: any) => {
         // nip: yup.string().required('Username harus diisi.')
         nip: yup.string().required().length(6),
         nama_karyawan: yup.string().required().max(100),
-        alamat_karyawan: yup.string().min(6).max(15),
+        alamat_karyawan: yup.string().min(6).max(200),
         // jenis_kelamin: yup.string().when(jenisKelamin, {
         //                     is: true,
         //                     then: yup.string().required("Jenis kelamin is required")

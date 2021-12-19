@@ -15,6 +15,12 @@ import { DataListMonitorPresensi } from '@src/repository/PresensiOnlineDataModel
 import { format } from 'date-fns';
 import Select from 'react-select';
 
+
+interface ActionDownloadFile {
+    id_presensi: any;
+}
+
+
 const TablePresensi = () => {
     const queryClient = useQueryClient();
     const history = useHistory();
@@ -24,6 +30,37 @@ const TablePresensi = () => {
     const [bulan, setBulan] = useState(12);
     const [idKaryawan, setIdKaryawan] = useState('-no-selected');    
     const [listKaryawan, setListKaryawan]: any = useState([]);
+
+    // ==== Download ====
+    const config = {
+        responseType: 'blob'
+    };
+    const getFileCheckin = async (data: ActionDownloadFile) => {
+            return await api.getData(`presensi/checkin-file/${data.id_presensi}`, config).then((r) => {
+                return r.data;
+            });
+    };
+    const onDownloadFileCheckin = async (data: ActionDownloadFile) => {
+        const data_file: any = await getFileCheckin(data);
+        //console.log('tipenya');
+        //console.log(data_file.type);
+        const file = new Blob([data_file], { type: 'image/jpg'});
+        const fileURL = URL.createObjectURL(file);
+        window.open(fileURL);
+    };
+    const getFileCheckout = async (data: ActionDownloadFile) => {
+            return await api.getData(`presensi/checkout-file/${data.id_presensi}`, config).then((r) => {
+                return r.data;
+            });
+    };
+    const onDownloadFileCheckout = async (data: ActionDownloadFile) => {
+        const data_file: any = await getFileCheckout(data);
+        //const file = new Blob([data_file], { type: data_file.type });
+        const file = new Blob([data_file], { type: 'image/jpg'});
+        const fileURL = URL.createObjectURL(file);
+        window.open(fileURL);
+    };
+    // ================
 
     // ================
     const getListKaryawan = async () => {
@@ -106,7 +143,7 @@ const TablePresensi = () => {
                                     tag="a"
                                     onClick={(e: any) => {
                                         e.preventDefault();
-                                        history.push('/presensi/download_file_checkin', { id_presensi: r.id_presensi });
+                                        onDownloadFileCheckin({ id_presensi: r.id_presensi });
                                     }}
                                 >
                                     <Settings className="mr-50" size={15} /> <span className="align-middle">Download File Checkin</span>
@@ -114,8 +151,7 @@ const TablePresensi = () => {
                                 <DropdownItem
                                     tag="a"
                                     onClick={(e: any) => {
-                                        e.preventDefault();
-                                        history.push('/presensi/download_file_checkout', { id_presensi: r.id_presensi });
+                                        onDownloadFileCheckout({ id_presensi: r.id_presensi });
                                     }}
                                 >
                                     <Settings className="mr-50" size={15} /> <span className="align-middle">Download File Checkout</span>
